@@ -814,7 +814,9 @@
                 maxMonth.setDate(1); // 月の最初の日
                 
                 // 前月ボタンの有効/無効
-                if (currentViewMonth.getTime() <= minMonth.getTime()) {
+                if (currentViewMonth.getFullYear() < minMonth.getFullYear() || 
+                    (currentViewMonth.getFullYear() === minMonth.getFullYear() && 
+                    currentViewMonth.getMonth() <= minMonth.getMonth())) {
                     prevMonthBtn.disabled = true;
                     prevMonthBtn.classList.add('disabled');
                 } else {
@@ -823,10 +825,9 @@
                 }
                 
                 // 翌月ボタンの有効/無効
-                const nextMonthDate = new Date(currentViewMonth);
-                nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
-                
-                if (nextMonthDate.getTime() > maxMonth.getTime()) {
+                if (currentViewMonth.getFullYear() > maxMonth.getFullYear() || 
+                    (currentViewMonth.getFullYear() === maxMonth.getFullYear() && 
+                    currentViewMonth.getMonth() >= maxMonth.getMonth())) {
                     nextMonthBtn.disabled = true;
                     nextMonthBtn.classList.add('disabled');
                 } else {
@@ -838,7 +839,6 @@
             changeMonth(delta) {
                 // 現在表示している月の複製を作成
                 const currentViewMonth = new Date(this.currentDate);
-                currentViewMonth.setDate(1); // 月の最初の日に設定
                 
                 // 移動先の月を計算
                 const targetMonth = new Date(currentViewMonth);
@@ -849,14 +849,18 @@
                 minMonth.setDate(1);
                 
                 const maxMonth = new Date(this.options.maxDate);
-                maxMonth.setDate(1);
+                maxMonth.setDate(28); // 月末まで選択できるように28日に設定
                 
                 // 月単位での比較（日付は考慮しない）
-                if (delta > 0 && targetMonth.getTime() > maxMonth.getTime()) {
+                if (delta > 0 && (targetMonth.getFullYear() > maxMonth.getFullYear() || 
+                                (targetMonth.getFullYear() === maxMonth.getFullYear() && 
+                                targetMonth.getMonth() > maxMonth.getMonth()))) {
                     return; // 最大月を超える場合は何もしない
                 }
                 
-                if (delta < 0 && targetMonth.getTime() < minMonth.getTime()) {
+                if (delta < 0 && (targetMonth.getFullYear() < minMonth.getFullYear() || 
+                                (targetMonth.getFullYear() === minMonth.getFullYear() && 
+                                targetMonth.getMonth() < minMonth.getMonth()))) {
                     return; // 最小月を下回る場合は何もしない
                 }
                 
