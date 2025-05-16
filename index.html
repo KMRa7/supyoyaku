@@ -1107,7 +1107,7 @@
                         type: 'text',
                         text: `【サポートMTG予約】\n【希望日時】：\n・第一希望日\n${DateUtil.formatDisplayDate(formData.dates[0])}\n\n・第二希望日\n${DateUtil.formatDisplayDate(formData.dates[1])}\n\n・第三希望日\n${DateUtil.formatDisplayDate(formData.dates[2])}\n\nメッセージ：${formData.message}`
                     }]).then(() => {
-                        alert('当日キャンセルは無いようにお願いいたします。');
+                        alert('ご予約ありがとうございます。');
                         liff.closeWindow();
                     }).catch(err => {
                         console.error('メッセージの送信に失敗しました', err);
