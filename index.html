@@ -801,18 +801,18 @@
             updateMonthNavigationButtons() {
                 const prevMonthBtn = this.monthSelector.querySelector('.prev-month');
                 const nextMonthBtn = this.monthSelector.querySelector('.next-month');
-
+                
                 // 最小月より前には移動できないようにする
                 const minMonth = new Date(this.options.minDate);
                 minMonth.setDate(1); // 月の最初の日
-
+                
                 const currentViewMonth = new Date(this.currentDate);
                 currentViewMonth.setDate(1); // 月の最初の日
-
-                // 最大月を計算（90日後を含む月）
+                
+                // 最大月を計算（options.maxDateを含む月）
                 const maxMonth = new Date(this.options.maxDate);
                 maxMonth.setDate(1); // 月の最初の日
-
+                
                 // 前月ボタンの有効/無効
                 if (currentViewMonth.getTime() <= minMonth.getTime()) {
                     prevMonthBtn.disabled = true;
@@ -821,11 +821,11 @@
                     prevMonthBtn.disabled = false;
                     prevMonthBtn.classList.remove('disabled');
                 }
-
+                
                 // 翌月ボタンの有効/無効
                 const nextMonthDate = new Date(currentViewMonth);
                 nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
-
+                
                 if (nextMonthDate.getTime() > maxMonth.getTime()) {
                     nextMonthBtn.disabled = true;
                     nextMonthBtn.classList.add('disabled');
@@ -836,35 +836,34 @@
             }
 
             changeMonth(delta) {
-                const newDate = new Date(this.currentDate);
-                newDate.setMonth(this.currentDate.getMonth() + delta);
-
-                this.currentDate = newDate;
-                this.renderCalendar();
-
-                // 月移動後にボタンの有効/無効を更新
-                this.updateMonthNavigationButtons();
-
-                // 表示制限: 90日を超える月への移動を制限
-                const maxMonth = new Date(this.options.maxDate);
+                // 現在表示している月の複製を作成
+                const currentViewMonth = new Date(this.currentDate);
+                currentViewMonth.setDate(1); // 月の最初の日に設定
+                
+                // 移動先の月を計算
+                const targetMonth = new Date(currentViewMonth);
+                targetMonth.setMonth(targetMonth.getMonth() + delta);
+                
+                // 制限用の月を計算
                 const minMonth = new Date(this.options.minDate);
-
-                // 年と月のみで比較（日付は無視）
-                maxMonth.setDate(1);
                 minMonth.setDate(1);
-                newDate.setDate(1);
-
-                if (delta > 0 && newDate.getTime() > maxMonth.getTime()) {
-                    return; // 最大日付を超える場合は何もしない
+                
+                const maxMonth = new Date(this.options.maxDate);
+                maxMonth.setDate(1);
+                
+                // 月単位での比較（日付は考慮しない）
+                if (delta > 0 && targetMonth.getTime() > maxMonth.getTime()) {
+                    return; // 最大月を超える場合は何もしない
                 }
-
-                if (delta < 0 && newDate.getTime() < minMonth.getTime()) {
-                    return; // 最小日付を超える場合は何もしない
+                
+                if (delta < 0 && targetMonth.getTime() < minMonth.getTime()) {
+                    return; // 最小月を下回る場合は何もしない
                 }
-
-                this.currentDate = newDate;
+                
+                // 問題がなければ月を変更
+                this.currentDate = targetMonth;
                 this.renderCalendar();
-
+                
                 // 月移動後にボタンの有効/無効を更新
                 this.updateMonthNavigationButtons();
             }
