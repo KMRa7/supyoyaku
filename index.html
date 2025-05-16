@@ -260,7 +260,8 @@
             cursor: pointer;
             font-size: 14px;
             transition: var(--transition);
-            font-weight: 500; /* フォントを少し太くする */
+            font-weight: 500;
+            /* フォントを少し太くする */
         }
 
         .time-slot:hover:not(.disabled) {
@@ -273,8 +274,10 @@
             color: var(--white);
             border-color: var(--primary);
             box-shadow: 0 3px 10px rgba(58, 54, 224, 0.2);
-            font-weight: 700; /* 選択時はさらに太く */
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* テキストに影をつける */
+            font-weight: 700;
+            /* 選択時はさらに太く */
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            /* テキストに影をつける */
         }
 
         /* 選択状態をより明確にする */
@@ -292,13 +295,67 @@
         /* 選択された日時表示の改善 */
         .selected-datetime {
             padding: 12px;
-            background: rgba(58, 54, 224, 0.1); /* 背景色を少し濃く */
+            background: rgba(58, 54, 224, 0.1);
+            /* 背景色を少し濃く */
             border-radius: 8px;
             text-align: center;
-            font-weight: 600; /* フォントを太く */
+            font-weight: 600;
+            /* フォントを太く */
             font-size: 14px;
             color: var(--text);
-            border-left: 4px solid var(--primary); /* 左端にアクセントカラー */
+            border-left: 4px solid var(--primary);
+            /* 左端にアクセントカラー */
+        }
+
+        /* スマホ対応のスタイル強化 */
+        @media (max-width: 576px) {
+
+            /* 時間選択の列数を減らして各要素を大きくする */
+            .time-selector {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                padding: 10px 5px;
+            }
+
+            .time-slot {
+                padding: 10px 5px;
+                font-size: 15px;
+                /* フォントサイズを少し大きく */
+                height: 40px;
+                /* 高さを固定して統一感を出す */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* 選択状態をより目立たせる */
+            .time-slot.selected {
+                background: var(--primary);
+                color: #ffffff;
+                /* 白色をより明確に */
+                border-color: var(--primary);
+                box-shadow: 0 2px 8px rgba(58, 54, 224, 0.4);
+                font-weight: 700;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+                transform: scale(1.05);
+                /* 選択中のスロットを少し大きく */
+            }
+
+            /* タップ領域を広げて操作しやすく */
+            .time-slot:active {
+                transform: scale(0.95);
+                transition: transform 0.1s;
+            }
+
+            /* 選択された日時表示の改善 */
+            .selected-datetime {
+                padding: 15px 10px;
+                font-size: 15px;
+                background: rgba(58, 54, 224, 0.15);
+                font-weight: 700;
+                border-left: 5px solid var(--primary);
+                margin-top: 10px;
+            }
         }
 
         textarea {
