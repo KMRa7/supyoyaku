@@ -1315,8 +1315,6 @@
 
         function submitForm() {
             const formData = {
-                visitCount: visitCount,
-                highschoolCount: highschoolCount,
                 selectedSymptom: selectedSymptom && selectedSymptom.length > 0 ? selectedSymptom : null, // 空の選択肢をチェック
                 dates: [
                     document.getElementById('date1').value,
@@ -1438,7 +1436,6 @@
                     row.cells[i].classList.remove('available', 'unavailable', 'selected');
                 }
             }
-
 
             // 現在の日時を取得
             const now = new Date();
@@ -1611,6 +1608,7 @@
         function hideLoadingSpinner() {
             document.getElementById('loadingSpinner').style.display = 'none';
         }
+
     </script>
 </body>
 
