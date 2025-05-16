@@ -293,6 +293,18 @@
             /* より強い影 */
         }
 
+        /* カレンダー月移動ボタンの無効化スタイル */
+        .month-selector button.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .month-selector button.disabled:hover {
+            background: rgba(0, 0, 0, 0.05);
+            transform: none;
+        }
+
         /* スマホ対応のカスタマイズ */
         @media (max-width: 576px) {
             .time-selector {
@@ -468,6 +480,8 @@
         .side-nav a:hover {
             transform: scale(1.1);
         }
+
+        
 
         /* スマホ対応 */
         @media (max-width: 576px) {
@@ -729,7 +743,8 @@
                 this.element = element;
                 this.options = Object.assign({
                     minDate: new Date(),
-                    maxDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
+                    // 90日後までを明示的に設定
+                    maxDate: new Date(new Date().setDate(new Date().getDate() + 90)),
                     startHour: 9,
                     startMinute: 30, // 9時30分から開始
                     endHour: 17,     // 17時まで
@@ -754,21 +769,88 @@
 
             init() {
                 // 月移動ボタンのイベント設定
-                this.monthSelector.querySelector('.prev-month').addEventListener('click', () => {
+                const prevMonthBtn = this.monthSelector.querySelector('.prev-month');
+                const nextMonthBtn = this.monthSelector.querySelector('.next-month');
+                
+                prevMonthBtn.addEventListener('click', () => {
                     this.changeMonth(-1);
                 });
 
-                this.monthSelector.querySelector('.next-month').addEventListener('click', () => {
+                nextMonthBtn.addEventListener('click', () => {
                     this.changeMonth(1);
                 });
 
+                // 初期表示時に進むボタンの有効/無効を設定
+                this.updateMonthNavigationButtons();
+                
                 // 初期表示
                 this.renderCalendar();
             }
 
+            // 月移動ボタンの有効/無効を更新するメソッド
+            updateMonthNavigationButtons() {
+                const prevMonthBtn = this.monthSelector.querySelector('.prev-month');
+                const nextMonthBtn = this.monthSelector.querySelector('.next-month');
+                
+                // 最小月より前には移動できないようにする
+                const minMonth = new Date(this.options.minDate);
+                minMonth.setDate(1); // 月の最初の日
+                
+                const currentViewMonth = new Date(this.currentDate);
+                currentViewMonth.setDate(1); // 月の最初の日
+                
+                // 最大月を計算（90日後を含む月）
+                const maxMonth = new Date(this.options.maxDate);
+                maxMonth.setDate(1); // 月の最初の日
+                
+                // 前月ボタンの有効/無効
+                if (currentViewMonth.getTime() <= minMonth.getTime()) {
+                    prevMonthBtn.disabled = true;
+                    prevMonthBtn.classList.add('disabled');
+                } else {
+                    prevMonthBtn.disabled = false;
+                    prevMonthBtn.classList.remove('disabled');
+                }
+                
+                // 翌月ボタンの有効/無効
+                const nextMonthDate = new Date(currentViewMonth);
+                nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+                
+                if (nextMonthDate.getTime() > maxMonth.getTime()) {
+                    nextMonthBtn.disabled = true;
+                    nextMonthBtn.classList.add('disabled');
+                } else {
+                    nextMonthBtn.disabled = false;
+                    nextMonthBtn.classList.remove('disabled');
+                }
+            }
+
             changeMonth(delta) {
-                this.currentDate.setMonth(this.currentDate.getMonth() + delta);
+                const newDate = new Date(this.currentDate);
+                newDate.setMonth(this.currentDate.getMonth() + delta);
+                
+                // 表示制限: 90日を超える月への移動を制限
+                const maxMonth = new Date(this.options.maxDate);
+                const minMonth = new Date(this.options.minDate);
+                
+                // 年と月のみで比較（日付は無視）
+                maxMonth.setDate(1);
+                minMonth.setDate(1);
+                newDate.setDate(1);
+                
+                if (delta > 0 && newDate.getTime() > maxMonth.getTime()) {
+                    return; // 最大日付を超える場合は何もしない
+                }
+                
+                if (delta < 0 && newDate.getTime() < minMonth.getTime()) {
+                    return; // 最小日付を超える場合は何もしない
+                }
+                
+                this.currentDate = newDate;
                 this.renderCalendar();
+                
+                // 月移動後にボタンの有効/無効を更新
+                this.updateMonthNavigationButtons();
             }
 
             renderCalendar() {
@@ -820,6 +902,7 @@
                 const today = new Date();
                 const currentDateFormatted = DateUtil.formatDate(today);
                 const minDateFormatted = DateUtil.formatDate(this.options.minDate);
+                const maxDateFormatted = DateUtil.formatDate(this.options.maxDate);
 
                 for (let i = 1; i <= daysInMonth; i++) {
                     const currentDate = new Date(year, month, i);
@@ -844,9 +927,11 @@
 
                     // 選択不可の条件：
                     // 1. 過去の日付
-                    // 2. 土日
-                    // 3. 祝日
-                    if (currentDateStr < minDateFormatted ||
+                    // 2. 90日を超える日付
+                    // 3. 土日
+                    // 4. 祝日
+                    if (currentDateStr < minDateFormatted || 
+                        currentDateStr > maxDateFormatted ||
                         !DateUtil.isBusinessDay(currentDate)) {
                         dayElement.classList.add('disabled');
                     } else {
