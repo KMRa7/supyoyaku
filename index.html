@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 1. ズーム防止のためのメタタグを追加 (head内) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>予約フォーム</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
@@ -40,6 +42,7 @@
             min-height: 100vh;
             padding: 20px;
             overflow-x: hidden;
+            touch-action: manipulation;
         }
 
         .container {
@@ -221,6 +224,7 @@
             background: var(--primary);
             color: var(--white);
             box-shadow: 0 5px 15px rgba(58, 54, 224, 0.3);
+            touch-action: manipulation;
         }
 
         .calendar-day.disabled {
@@ -249,6 +253,7 @@
             padding: 5px;
             border-radius: 10px;
             margin-bottom: 15px;
+            touch-action: manipulation;
         }
 
         /* 時間選択スロットのスタイル改善 */
@@ -481,7 +486,7 @@
             transform: scale(1.1);
         }
 
-        
+
 
         /* スマホ対応 */
         @media (max-width: 576px) {
@@ -741,10 +746,15 @@
         class DateTimePicker {
             constructor(element, options) {
                 this.element = element;
+
+                // 明示的に今日の日付と90日後の日付を計算
+                const today = new Date();
+                const ninetyDaysLater = new Date();
+                ninetyDaysLater.setDate(today.getDate() + 90);
+
                 this.options = Object.assign({
-                    minDate: new Date(),
-                    // 90日後までを明示的に設定
-                    maxDate: new Date(new Date().setDate(new Date().getDate() + 90)),
+                    minDate: today,
+                    maxDate: ninetyDaysLater,
                     startHour: 9,
                     startMinute: 30, // 9時30分から開始
                     endHour: 17,     // 17時まで
@@ -771,7 +781,7 @@
                 // 月移動ボタンのイベント設定
                 const prevMonthBtn = this.monthSelector.querySelector('.prev-month');
                 const nextMonthBtn = this.monthSelector.querySelector('.next-month');
-                
+
                 prevMonthBtn.addEventListener('click', () => {
                     this.changeMonth(-1);
                 });
@@ -782,7 +792,7 @@
 
                 // 初期表示時に進むボタンの有効/無効を設定
                 this.updateMonthNavigationButtons();
-                
+
                 // 初期表示
                 this.renderCalendar();
             }
@@ -791,18 +801,18 @@
             updateMonthNavigationButtons() {
                 const prevMonthBtn = this.monthSelector.querySelector('.prev-month');
                 const nextMonthBtn = this.monthSelector.querySelector('.next-month');
-                
+
                 // 最小月より前には移動できないようにする
                 const minMonth = new Date(this.options.minDate);
                 minMonth.setDate(1); // 月の最初の日
-                
+
                 const currentViewMonth = new Date(this.currentDate);
                 currentViewMonth.setDate(1); // 月の最初の日
-                
+
                 // 最大月を計算（90日後を含む月）
                 const maxMonth = new Date(this.options.maxDate);
                 maxMonth.setDate(1); // 月の最初の日
-                
+
                 // 前月ボタンの有効/無効
                 if (currentViewMonth.getTime() <= minMonth.getTime()) {
                     prevMonthBtn.disabled = true;
@@ -811,11 +821,11 @@
                     prevMonthBtn.disabled = false;
                     prevMonthBtn.classList.remove('disabled');
                 }
-                
+
                 // 翌月ボタンの有効/無効
                 const nextMonthDate = new Date(currentViewMonth);
                 nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
-                
+
                 if (nextMonthDate.getTime() > maxMonth.getTime()) {
                     nextMonthBtn.disabled = true;
                     nextMonthBtn.classList.add('disabled');
@@ -828,27 +838,33 @@
             changeMonth(delta) {
                 const newDate = new Date(this.currentDate);
                 newDate.setMonth(this.currentDate.getMonth() + delta);
-                
+
+                this.currentDate = newDate;
+                this.renderCalendar();
+
+                // 月移動後にボタンの有効/無効を更新
+                this.updateMonthNavigationButtons();
+
                 // 表示制限: 90日を超える月への移動を制限
                 const maxMonth = new Date(this.options.maxDate);
                 const minMonth = new Date(this.options.minDate);
-                
+
                 // 年と月のみで比較（日付は無視）
                 maxMonth.setDate(1);
                 minMonth.setDate(1);
                 newDate.setDate(1);
-                
+
                 if (delta > 0 && newDate.getTime() > maxMonth.getTime()) {
                     return; // 最大日付を超える場合は何もしない
                 }
-                
+
                 if (delta < 0 && newDate.getTime() < minMonth.getTime()) {
                     return; // 最小日付を超える場合は何もしない
                 }
-                
+
                 this.currentDate = newDate;
                 this.renderCalendar();
-                
+
                 // 月移動後にボタンの有効/無効を更新
                 this.updateMonthNavigationButtons();
             }
@@ -900,13 +916,11 @@
 
                 // 当月の日付を表示
                 const today = new Date();
-                const currentDateFormatted = DateUtil.formatDate(today);
-                const minDateFormatted = DateUtil.formatDate(this.options.minDate);
-                const maxDateFormatted = DateUtil.formatDate(this.options.maxDate);
+                const minDate = new Date(this.options.minDate);
+                const maxDate = new Date(this.options.maxDate);
 
                 for (let i = 1; i <= daysInMonth; i++) {
                     const currentDate = new Date(year, month, i);
-                    const currentDateStr = DateUtil.formatDate(currentDate);
 
                     const dayElement = document.createElement('div');
                     dayElement.className = 'calendar-cell calendar-day';
@@ -926,12 +940,12 @@
                     }
 
                     // 選択不可の条件：
-                    // 1. 過去の日付
-                    // 2. 90日を超える日付
+                    // 1. 過去の日付 (minDateより前)
+                    // 2. maxDateより後の日付
                     // 3. 土日
                     // 4. 祝日
-                    if (currentDateStr < minDateFormatted || 
-                        currentDateStr > maxDateFormatted ||
+                    if (currentDate < minDate ||
+                        currentDate > maxDate ||
                         !DateUtil.isBusinessDay(currentDate)) {
                         dayElement.classList.add('disabled');
                     } else {
