@@ -790,8 +790,10 @@
     <div class="container">
         <h1>サポートミーティング<br>予約フォーム</h1>
 
+        <div class="info-text">※枠数に限りがございますので、ご予約状況により、ご希望のお時間でご予約が取れない場合がございます。</div>
+
         <div class="highlight-background">
-            <div class="kibounitizi">希望日時<span class="required">必須</span></div>
+            <div class="kibounitizi">第1希望日<span class="required">必須</span></div>
         </div>
 
         <div class="datetime-wrapper" style="text-align: center;">
@@ -817,7 +819,7 @@
             <input type="datetime-local" id="date3" class="datetime-input" placeholder=" " aria-label="タップして日時を入力">
         </div>
 
-        <div class="labelContent">備考<br>（依頼内容や事前にお伝えしたいことございましたらご記入ください）</div>
+        <div class="labelContent">備考※任意<br>（依頼内容や事前にお伝えしたいことございましたらご記入ください）</div>
         <textarea id="message" rows="4" placeholder="メッセージを入力してください"></textarea>
 
         <button class="submit-button" onclick="submitForm()" id="section-message">予約を行う</button>
@@ -854,7 +856,7 @@
             liff.init({ liffId: '2007424620-Djb9v2j5' }).then(() => {
                 liff.sendMessages([{
                     type: 'text',
-                    text: `【予約フォーム】\n【希望日時】：\n・第一希望日\n${formatDate(formData.dates[0])}\n\n・第二希望日\n${formatDate(formData.dates[1])}\n\n・第三希望日\n${formatDate(formData.dates[2])}\n\nメッセージ：${formData.message}`
+                    text: `【サポートMTG予約】\n【希望日時】：\n・第一希望日\n${formatDate(formData.dates[0])}\n\n・第二希望日\n${formatDate(formData.dates[1])}\n\n・第三希望日\n${formatDate(formData.dates[2])}\n\nメッセージ：${formData.message}`
                 }]).then(() => {
                     alert('当日キャンセルは無いようにお願いいたします。');
                     liff.closeWindow();
