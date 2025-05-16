@@ -261,56 +261,40 @@
             font-size: 14px;
             transition: var(--transition);
             font-weight: 500;
-            /* フォントを少し太くする */
+            position: relative;
+            z-index: 1;
         }
 
-        .time-slot:hover:not(.disabled) {
-            border-color: var(--primary);
-            background: rgba(58, 54, 224, 0.05);
+        /* 以下を修正：タッチデバイスでホバー効果が残らないように変更 */
+        @media (hover: hover) {
+            .time-slot:hover:not(.disabled) {
+                border-color: var(--primary);
+                background: rgba(58, 54, 224, 0.05);
+            }
         }
 
-        .time-slot.selected {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
-            box-shadow: 0 3px 10px rgba(58, 54, 224, 0.2);
-            font-weight: 700;
-            /* 選択時はさらに太く */
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-            /* テキストに影をつける */
-        }
-
-        /* 選択状態をより明確にする */
-        .time-selector {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 5px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        /* 選択された日時表示の改善 */
-        .selected-datetime {
-            padding: 12px;
+        /* タッチ時のフィードバック */
+        .time-slot:active {
+            transform: scale(0.95);
+            transition: transform 0.1s;
             background: rgba(58, 54, 224, 0.1);
-            /* 背景色を少し濃く */
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 600;
-            /* フォントを太く */
-            font-size: 14px;
-            color: var(--text);
-            border-left: 4px solid var(--primary);
-            /* 左端にアクセントカラー */
         }
 
-        /* スマホ対応のスタイル強化 */
-        @media (max-width: 576px) {
+        /* 選択状態の強調 - コントラスト改善 */
+        .time-slot.selected {
+            background: #2a26af;
+            /* より暗い青に変更 */
+            color: #ffffff;
+            /* 純粋な白色 */
+            border-color: #2a26af;
+            box-shadow: 0 3px 10px rgba(42, 38, 175, 0.3);
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            /* より強い影 */
+        }
 
-            /* 時間選択の列数を減らして各要素を大きくする */
+        /* スマホ対応のカスタマイズ */
+        @media (max-width: 576px) {
             .time-selector {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 8px;
@@ -319,32 +303,58 @@
 
             .time-slot {
                 padding: 10px 5px;
-                font-size: 15px;
-                /* フォントサイズを少し大きく */
-                height: 40px;
-                /* 高さを固定して統一感を出す */
+                font-size: 16px;
+                /* さらに大きく */
+                height: 44px;
+                /* 高さを増加 */
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
 
-            /* 選択状態をより目立たせる */
+            /* モバイル用の選択状態強化 */
             .time-slot.selected {
-                background: var(--primary);
+                background: #2a26af;
+                /* より暗い青に変更 */
                 color: #ffffff;
-                /* 白色をより明確に */
-                border-color: var(--primary);
-                box-shadow: 0 2px 8px rgba(58, 54, 224, 0.4);
+                border: 2px solid #ffffff;
+                /* 白い境界線を追加 */
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                /* より強い影 */
                 font-weight: 700;
-                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
                 transform: scale(1.05);
-                /* 選択中のスロットを少し大きく */
+                position: relative;
+                /* 疑似要素用 */
+                z-index: 1;
+                /* 重なり順序を上に */
             }
 
-            /* タップ領域を広げて操作しやすく */
+            /* 選択状態に光彩効果を追加 */
+            .time-slot.selected::after {
+                content: '';
+                position: absolute;
+                top: -2px;
+                left: -2px;
+                right: -2px;
+                bottom: -2px;
+                border-radius: 10px;
+                border: 2px solid rgba(255, 255, 255, 0.5);
+                z-index: -1;
+                pointer-events: none;
+            }
+
+            /* タップフィードバック - ホバー効果を防止 */
             .time-slot:active {
                 transform: scale(0.95);
                 transition: transform 0.1s;
+                background-color: rgba(58, 54, 224, 0.2);
+            }
+
+            /* タップ後のホバー状態をリセット */
+            .time-slot:hover:not(.selected):not(:active) {
+                background-color: transparent;
+                border-color: var(--border);
             }
 
             /* 選択された日時表示の改善 */
@@ -355,6 +365,8 @@
                 font-weight: 700;
                 border-left: 5px solid var(--primary);
                 margin-top: 10px;
+                color: #000000;
+                /* 黒色テキストで確実に読める */
             }
         }
 
