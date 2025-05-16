@@ -555,6 +555,100 @@
                 const minutes = String(date.getMinutes()).padStart(2, '0');
                 
                 return `${year}年${month}月${day}日 ${hours}時${minutes}分`;
+            },
+            
+            // 土日判定
+            isWeekend: function(date) {
+                const day = date.getDay();
+                return day === 0 || day === 6; // 0:日曜日, 6:土曜日
+            },
+            
+            // 祝日判定
+            isHoliday: function(date) {
+                // 日本の祝日リスト (2025年5月まで)
+                const holidays = [
+                    // 2025年
+                    '2025-05-03', // 憲法記念日
+                    '2025-05-04', // みどりの日
+                    '2025-05-05', // こどもの日
+                    '2025-05-06', // 振替休日
+                    '2025-07-21', // 海の日
+                    '2025-08-11', // 山の日
+                    '2025-09-15', // 敬老の日
+                    '2025-09-23', // 秋分の日
+                    '2025-10-13', // スポーツの日
+                    '2025-11-03', // 文化の日
+                    '2025-11-23', // 勤労感謝の日
+                    '2025-11-24', // 振替休日
+                    '2025-12-27',
+                    '2025-12-28',
+                    '2025-12-29',
+                    '2025-12-30',
+                    '2025-12-31',
+
+                    // 2026年
+                    '2026-01-01', // 元日
+                    '2026-01-02', 
+                    '2026-01-03', 
+                    '2026-01-04', 
+                    '2026-01-12', // 成人の日
+                    '2026-02-11', // 建国記念の日
+                    '2026-02-23', // 天皇誕生日
+                    '2026-03-20', // 春分の日
+                    '2026-04-29', // 昭和の日
+                    '2026-05-03', // 憲法記念日
+                    '2026-05-04', // みどりの日
+                    '2026-05-05', // こどもの日
+                    '2026-05-06', // 振替休日
+                    '2026-07-20', // 海の日
+                    '2026-08-11', // 山の日
+                    '2026-09-21', // 敬老の日
+                    '2026-09-22', // 国民の休日
+                    '2026-09-23', // 秋分の日
+                    '2026-10-12', // スポーツの日
+                    '2026-11-03', // 文化の日
+                    '2026-11-23', // 勤労感謝の日
+                    '2026-12-27',
+                    '2026-12-28',
+                    '2026-12-29',
+                    '2026-12-30',
+                    '2026-12-31',
+
+                    // 2027年
+                    '2027-01-01', // 元日
+                    '2027-01-02',
+                    '2027-01-03',
+                    '2027-01-04',
+                    '2027-01-11', // 成人の日
+                    '2027-02-11', // 建国記念の日
+                    '2027-02-23', // 天皇誕生日
+                    '2027-03-21', // 春分の日
+                    '2027-03-22', // 振替休日
+                    '2027-04-29', // 昭和の日
+                    '2027-05-03', // 憲法記念日
+                    '2027-05-04', // みどりの日
+                    '2027-05-05', // こどもの日
+                    '2027-07-19', // 海の日
+                    '2027-08-11', // 山の日
+                    '2027-09-20', // 敬老の日
+                    '2027-09-23', // 秋分の日
+                    '2027-10-11', // スポーツの日
+                    '2027-11-03', // 文化の日
+                    '2027-11-23', // 勤労感謝の日
+                    '2027-12-27',
+                    '2027-12-28',
+                    '2027-12-29',
+                    '2027-12-30',
+                    '2027-12-31',
+                ];
+                
+                const dateStr = this.formatDate(date);
+                return holidays.includes(dateStr);
+            },
+            
+            // 営業日かどうか判定（土日祝以外）
+            isBusinessDay: function(date) {
+                return !this.isWeekend(date) && !this.isHoliday(date);
             }
         };
 
@@ -566,7 +660,8 @@
                     minDate: new Date(),
                     maxDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
                     startHour: 9,
-                    endHour: 18,
+                    startMinute: 30, // 9時30分から開始
+                    endHour: 17,     // 17時まで
                     timeInterval: 30, // 30分間隔
                     onChange: null
                 }, options);
@@ -621,6 +716,14 @@
                     const dayElement = document.createElement('div');
                     dayElement.className = 'calendar-cell calendar-header';
                     dayElement.textContent = day;
+                    
+                    // 土日の曜日ヘッダーに色を付ける
+                    if (day === '土') {
+                        dayElement.classList.add('saturday');
+                    } else if (day === '日') {
+                        dayElement.classList.add('sunday');
+                    }
+                    
                     this.calendarGrid.appendChild(dayElement);
                 });
                 
@@ -655,8 +758,25 @@
                     dayElement.className = 'calendar-cell calendar-day';
                     dayElement.textContent = i;
                     
-                    // 過去の日付は選択不可
-                    if (currentDateStr < minDateFormatted) {
+                    // 曜日に応じたクラス追加（土日に色を付ける）
+                    const dayOfWeek = currentDate.getDay();
+                    if (dayOfWeek === 0) { // 日曜日
+                        dayElement.classList.add('sunday');
+                    } else if (dayOfWeek === 6) { // 土曜日
+                        dayElement.classList.add('saturday');
+                    }
+                    
+                    // 祝日判定
+                    if (DateUtil.isHoliday(currentDate)) {
+                        dayElement.classList.add('holiday');
+                    }
+                    
+                    // 選択不可の条件：
+                    // 1. 過去の日付
+                    // 2. 土日
+                    // 3. 祝日
+                    if (currentDateStr < minDateFormatted || 
+                        !DateUtil.isBusinessDay(currentDate)) {
                         dayElement.classList.add('disabled');
                     } else {
                         dayElement.addEventListener('click', () => {
@@ -700,10 +820,16 @@
             renderTimeSelector() {
                 this.timeSelector.innerHTML = '';
                 
-                // 9時から18時まで、30分間隔で時間スロットを作成
-                for (let hour = this.options.startHour; hour <= this.options.endHour; hour++) {
-                    for (let minute = 0; minute < 60; minute += this.options.timeInterval) {
-                        // 終了時間は含まない（例: 18時なら18:00のみ）
+                // 9時半から17時まで、30分間隔で時間スロットを作成
+                let startHour = this.options.startHour;
+                let startMinute = this.options.startMinute || 0;
+                
+                for (let hour = startHour; hour <= this.options.endHour; hour++) {
+                    // 開始時間が9:30の場合、最初のループでは30分から開始
+                    let startMin = (hour === startHour) ? startMinute : 0;
+                    
+                    for (let minute = startMin; minute < 60; minute += this.options.timeInterval) {
+                        // 終了時間は含まない（例: 17時なら17:00まで）
                         if (hour === this.options.endHour && minute > 0) continue;
                         
                         const timeStr = DateUtil.formatTime(hour, minute);
@@ -817,7 +943,46 @@
                     console.log('LIFF初期化失敗', err);
                 });
             };
+            
+            // スタイルを追加
+            addCalendarStyles();
         });
+
+        // カレンダーのスタイルを追加する関数
+        function addCalendarStyles() {
+            const style = document.createElement('style');
+            style.textContent = `
+                /* 土日祝の色設定 */
+                .calendar-header.sunday,
+                .calendar-day.sunday {
+                    color: #ff0000; /* 日曜日は赤色 */
+                }
+                
+                .calendar-header.saturday,
+                .calendar-day.saturday {
+                    color: #0000ff; /* 土曜日は青色 */
+                }
+                
+                .calendar-day.holiday {
+                    color: #ff0000; /* 祝日は赤色 */
+                }
+                
+                /* 選択不可の日付 */
+                .calendar-day.disabled {
+                    color: #cccccc;
+                    cursor: default;
+                    background-color: #f8f8f8;
+                }
+                
+                /* 選択中の日付 */
+                .calendar-day.selected:not(.disabled) {
+                    background-color: #007bff;
+                    color: white;
+                    border-radius: 50%;
+                }
+            `;
+            document.head.appendChild(style);
+        }
     </script>
 </body>
 
